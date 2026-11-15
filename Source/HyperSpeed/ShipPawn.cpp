@@ -1,0 +1,86 @@
+#include "ShipPawn.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "Engine/LocalPlayer.h"
+#include "GameFramework/PlayerController.h"
+#include "InputAction.h"
+#include "InputActionValue.h"
+#include "InputMappingContext.h"
+#include "UObject/ConstructorHelpers.h"
+
+// Sets default values
+AShipPawn::AShipPawn()
+{
+    // Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
+
+    static ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContextAsset(
+        TEXT("/Game/Player/IMC_Ship.IMC_Ship"));
+    ShipMappingContext = MappingContextAsset.Object;
+
+    static ConstructorHelpers::FObjectFinder<UInputAction> StrafeActionAsset(
+        TEXT("/Game/Player/IA_Strafe.IA_Strafe"));
+    StrafeAction = StrafeActionAsset.Object;
+}
+
+// Called when the game starts or when spawned
+void AShipPawn::BeginPlay() { Super::BeginPlay(); }
+
+// Called every frame
+void AShipPawn::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // The existing mapping gives Q=-1 and D=+1; Q targets the right lane (+Y).
+    const double TargetY = -FMath::Sign(StrafeInput) * 200.0;
+    const double CurrentY = GetActorLocation().Y;
+    const double NextY = FMath::FInterpConstantTo(CurrentY, TargetY, DeltaTime, StrafeSpeed);
+
+    FVector Movement = GetActorForwardVector() * InitialSpeed * DeltaTime;
+    Movement.Y = NextY - CurrentY;
+    AddActorWorldOffset(Movement, true);
+}
+
+// Called to bind functionality to input
+void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    StrafeInput = 0.0f;
+
+    if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+    {
+        if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+        {
+            if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+                LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+            {
+                if (ShipMappingContext)
+                {
+                    Subsystem->AddMappingContext(ShipMappingContext, 0);
+                }
+            }
+        }
+    }
+
+    if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    {
+        if (StrafeAction)
+        {
+            EnhancedInput->BindAction(StrafeAction, ETriggerEvent::Triggered, this, &AShipPawn::HandleStrafe);
+            EnhancedInput->BindAction(StrafeAction, ETriggerEvent::Completed, this, &AShipPawn::StopStrafe);
+            EnhancedInput->BindAction(StrafeAction, ETriggerEvent::Canceled, this, &AShipPawn::StopStrafe);
+        }
+    }
+}
+
+void AShipPawn::HandleStrafe(const FInputActionValue& Value)
+{
+    StrafeInput = FMath::Clamp(Value.Get<float>(), -1.0f, 1.0f);
+}
+
+void AShipPawn::StopStrafe(const FInputActionValue& Value)
+{
+    StrafeInput = 0.0f;
+}
