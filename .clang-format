@@ -1,0 +1,27 @@
+BasedOnStyle: Google
+IndentWidth: 4
+IndentAccessModifiers: false
+AccessModifierOffset: -2
+ColumnLimit: 120
+BreakBeforeBraces: Allman
+IncludeCategories:
+  - Regex: '\.generated\.h"$'
+    Priority: 1000
+  - Regex: 'CoreMinimal.h'
+    Priority: 1
+  - Regex: '^"Blueprint/'
+    Priority: 1
+  - Regex: '^"Components/'
+    Priority: 1
+  - Regex: '^"Engine/'
+    Priority: 1
+  - Regex: '^"GameFramework/'
+    Priority: 1
+  - Regex: '^"Kismet/'
+    Priority: 1
+  - Regex: '^"Modules/'
+    Priority: 1
+  - Regex: '^"UObject/'
+    Priority: 1
+  - Regex: '.*'
+    Priority: 2
