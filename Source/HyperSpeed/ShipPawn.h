@@ -74,4 +74,5 @@ class HYPERSPEED_API AShipPawn : public APawn
     float StrafeInput = 0.0f;
     float AccelerationInput = 0.0f;
     float ForwardSpeedKmh = 0.0f;
+    float TempoUpdateElapsed = 0.0f;
 };

@@ -32,6 +32,8 @@ class HYPERSPEED_API UMusicEngine : public UGameInstanceSubsystem
     void SetMasterVolume(float value);
     void SetGlobalTempo(int32 value);
 
+    void SetTempoFromSpeed(float SpeedMetersPerSecond);
+
     UFUNCTION(BlueprintCallable, Category = "Music")
     void PlayMusic(const FString& MusicFile);
 

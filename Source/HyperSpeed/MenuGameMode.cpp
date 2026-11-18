@@ -4,10 +4,20 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "MainMenu.h"
+#include "MusicEngine.h"
+#include "Engine/GameInstance.h"
 
 void AMenuGameMode::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (UGameInstance* Instance = GetGameInstance())
+    {
+        if (UMusicEngine* Music = Instance->GetSubsystem<UMusicEngine>())
+        {
+            Music->PlayMenuMusic();
+        }
+    }
 
     APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
     if (!MainMenuClass)

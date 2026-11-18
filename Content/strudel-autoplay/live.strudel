@@ -2,115 +2,34 @@ const MASTER_VOLUME = 0.15
 
 const GLOBAL_TEMPO = 150
 
-// Hyperpop guitar - F minor, 150 BPM, 32-bar loop.
-// One cycle = one four-beat bar.
-setcpm(GLOBAL_TEMPO / 4)
-
-const kick = sound("<bd*4 [bd bd [~ bd] bd] bd*4 [bd bd bd [bd bd]]>")
-    .bank("akaimpc60")
-    .distort("1.4:0.7")
-    .gain(slider(0.62, 0, 1))
-    .lpf(6500)
-
-const clap = sound("~ [cp,sd] ~ cp")
-    .bank("akaimpc60")
-    .gain(slider(0.32, 0, 1))
-    .hpf(1000)
-    .room(0.12)
-
-const hats = sound("<hh*8 [hh hh hh [hh hh] hh hh [hh hh] hh]>")
-    .bank("rolandd70")
-    .gain("0.1 0.2 0.12 0.24 0.1 0.2 0.14 0.26")
-    .hpf(6500)
-    .pan("0.3 0.7")
-
-// Increasingly tight drum rolls at the end of the phrase.
-const fill = sound("<~ ~ ~ [~ sd sd*2 sd*4]>")
-    .bank("akaimpc60")
-    .crush(7)
-    .gain(0.2)
-    .hpf(1400)
-    .pan("0.35 0.65")
-
-// Round sub-bass without distortion; steady register and softened attacks.
-const bass = note("<[~ f1 f1 [c2 f1]] [~ ab1 ab1 [eb2 ab1]] [~ f1 [f1 f1] c2] [~ db2 ab1 [eb2 db2]]>")
-    .sound("sine")
-    .attack(0.015)
-    .release(0.1)
-    .clip(0.9)
-    .lpf(350)
-    .gain(slider(0.48, 0, 0.8))
-
-// Distorted electric guitar playing the original melodic motif.
-const guitar = note("<[db4 bb4 ~ ab4] [ab4 bb4 eb4 ~] [f4 bb4 ~ ab4] [eb4 ~ db4 eb4]>")
-    .sound("gm_distortion_guitar")
-    .attack(0.005)
-    .release(0.12)
-    .clip(0.85)
-    .distort("1.5:0.65")
-    .hpf(180)
-    .lpf(4800)
-    .gain(slider(0.28, 0, 0.6))
-    .room(0.28)
-    .delay(0.22)
-    .delaytime(0.3)
-    .delayfeedback(0.25)
-
-const pad = note("<[f3,ab3,c4] [ab3,c4,eb4] [f3,ab3,c4] [db3,f3,ab3]>")
-    .sound("triangle")
-    .attack(0.18)
-    .release(0.35)
-    .lpf(1800)
-    .gain(slider(0.12, 0, 0.4))
-    .room(0.5)
-
-// Offbeat supersaw chords: the pumping effect is built into the rhythm.
-const chords = note("<[~ [f4,ab4,c5] ~ [f4,ab4,c5] ~ [f4,ab4,c5] ~ [f4,ab4,c5]] [~ [ab4,c5,eb5] ~ [ab4,c5,eb5] ~ [ab4,c5,eb5] ~ [ab4,c5,eb5]] [~ [f4,ab4,c5] ~ [f4,ab4,c5] ~ [f4,ab4,c5] ~ [f4,ab4,c5]] [~ [db4,f4,ab4] ~ [db4,f4,ab4] ~ [db4,f4,ab4] ~ [db4,f4,ab4]]>")
-    .sound("supersaw")
-    .attack(0.015)
-    .release(0.12)
-    .clip(0.65)
-    .lpf("<3800 5200 4400 7000>")
-    .hpf(450)
-    .gain(slider(0.1, 0, 0.3))
-    .room(0.2)
-
-// High lead with octave jumps and short digital bursts.
-const lead = note("<[~ c6 [ab5 ab6] ~] [bb5 ~ [c6 c6] eb6] [~ ab5 [f6 f5] ~] [eb6 db6 [c6 c6] [eb6 c6]]>")
-    .sound("square")
-    .attack(0.005)
-    .release(0.09)
-    .clip(0.5)
-    .vib(6)
-    .vibmod(0.12)
-    .crush("<12 12 10 7>")
-    .lpf(6500)
-    .hpf(900)
-    .gain(slider(0.13, 0, 0.4))
-    .delay(0.18)
-    .delaytime(0.3)
-    .delayfeedback(0.2)
-    .room(0.25)
-    .pan(0.62)
-
-// Chopped guitar shifted up an octave for transitions.
-const glitch = guitar.transpose(12).fast(2)
-    .clip(0.3)
-    .crush("<8 6 8 5>")
-    .gain(0.16)
-    .pan("0.2 0.8 0.35 0.65")
-
-const drums = stack(kick, clap, hats, fill)
-const drop = stack(guitar, bass, drums, chords, lead)
-
-$: arrange(
-    [4, stack(guitar, pad)],                 // Intro: motif only
-    [8, stack(guitar, bass, drums, chords)], // First buildup
-    [2, stack(guitar, pad)],                 // Suspended break
-    [2, stack(glitch, pad, fill)],           // Digital transition
-    [8, drop],                               // Hyperpop drop
-    [4, stack(drop, glitch)],                // Denser final phrase
-    [4, stack(guitar, pad)]                  // Breather before the loop
-).postgain(MASTER_VOLUME)
-
+// "coastline" @by eddyflux
+// @version 1.0
+samples('github:eddyflux/crate')
+setcps(0.75)
+let chords = chord("<Bbm9 Fm9>/4").dict('ireal')
+stack(
+  stack( // DRUMS
+    s("bd").struct("<[x*<1 2> [~@3 x]] x>"),
+    s("~ [rim, sd:<2 3>]").room("<0 .2>"),
+    n("[0 <1 3>]*<2!3 4>").s("hh"),
+    s("rd:<1!3 2>*2").mask("<0 0 1 1>/16").gain(.5)
+  ).bank('crate')
+  .mask("<[0 1] 1 1 1>/16".early(.5))
+  , // CHORDS
+  chords.offset(-1).voicing().s("gm_epiano1:1")
+  .phaser(4).room(.5)
+  , // MELODY
+  n("<0!3 1*2>").set(chords).mode("root:g2")
+  .voicing().s("gm_acoustic_bass"),
+  chords.n("[0 <4 3 <2 5>>*2](<3 5>,8)")
+  .anchor("D5").voicing()
+  .segment(4).clip(rand.range(.4,.8))
+  .room(.75).shape(.3).delay(.25)
+  .fm(sine.range(3,8).slow(8))
+  .lpf(sine.range(500,1000).slow(8)).lpq(5)
+  .rarely(ply("2")).chunk(4, fast(2))
+  .gain(perlin.range(.6, .9))
+  .mask("<0 1 1 0>/16")
+)
+.late("[0 .01]*4").late("[0 .01]*2").size(4).gain(MASTER_VOLUME)
 

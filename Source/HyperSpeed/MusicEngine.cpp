@@ -128,6 +128,32 @@ void UMusicEngine::SetGlobalTempo(int32 value)
     SetGlobalTempo(value, liveFile);
 }
 
+void UMusicEngine::SetTempoFromSpeed(float SpeedMetersPerSecond)
+{
+    const int32 BPM = FMath::Max(0, FMath::RoundToInt(SpeedMetersPerSecond * 5.0f));
+    if (FMath::IsNearlyEqual(CurrentBPM, static_cast<float>(BPM)))
+    {
+        return;
+    }
+
+    FString Content;
+    if (!load(Content, liveFile))
+    {
+        return;
+    }
+
+    // Normalize the active track to four beats per cycle, regardless of its original tempo syntax.
+    const FRegexPattern TempoPattern(TEXT(R"((?m)^\s*setcp[ms]\([^\r\n)]*\))"));
+    FRegexMatcher Tempo(TempoPattern, Content);
+    if (!Tempo.FindNext())
+    {
+        return;
+    }
+    const FString Command = FString::Printf(TEXT("setcpm(%d / 4)"), BPM);
+    Content = Content.Left(Tempo.GetMatchBeginning()) + Command + Content.Mid(Tempo.GetMatchEnding());
+    save(Content, liveFile);
+}
+
 void UMusicEngine::PlayMenuMusic()
 {
     writeLive(TEXT("menu.strudel"));

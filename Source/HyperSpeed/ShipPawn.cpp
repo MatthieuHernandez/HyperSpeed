@@ -1,5 +1,7 @@
 #include "ShipPawn.h"
 #include "GameHUD.h"
+#include "MusicEngine.h"
+#include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "EnhancedInputComponent.h"
@@ -59,6 +61,19 @@ void AShipPawn::Tick(float DeltaTime)
     ForwardSpeedKmh = DeltaTime > SMALL_NUMBER
         ? FMath::Abs(GetActorLocation().X - PreviousLocation.X) / DeltaTime * 0.036f
         : 0.0f;
+
+    TempoUpdateElapsed += DeltaTime;
+    if (TempoUpdateElapsed >= 0.1f && IsLocallyControlled())
+    {
+        TempoUpdateElapsed = 0.0f;
+        if (UGameInstance* Instance = GetGameInstance())
+        {
+            if (UMusicEngine* Music = Instance->GetSubsystem<UMusicEngine>())
+            {
+                Music->SetTempoFromSpeed(ForwardSpeedKmh / 3.6f);
+            }
+        }
+    }
 }
 
 // Called to bind functionality to input
