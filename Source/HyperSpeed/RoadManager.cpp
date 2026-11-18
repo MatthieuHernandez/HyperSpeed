@@ -4,6 +4,9 @@
 
 #include "ShipPawn.h"
 #include "MapLayout.h"
+#include "HyperSpeedGameInstance.h"
+#include "LevelDefinition.h"
+#include "MusicEngine.h"
 #include "Engine/World.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -39,6 +42,17 @@ void ARoadManager::BeginPlay()
     if (!IsValid(Ship))
     {
         Ship = Cast<AShipPawn>(UGameplayStatics::GetPlayerPawn(this, 0));
+    }
+    if (const UHyperSpeedGameInstance* Instance = Cast<UHyperSpeedGameInstance>(GetGameInstance()))
+    {
+        if (IsValid(Instance->SelectedLevel))
+        {
+            LayoutTexture = Instance->SelectedLevel->LayoutTexture;
+            if (UMusicEngine* MusicEngine = Instance->GetSubsystem<UMusicEngine>())
+            {
+                MusicEngine->PlayMusic(Instance->SelectedLevel->MusicFile);
+            }
+        }
     }
     if (LayoutTexture && ObstacleClass)
     {

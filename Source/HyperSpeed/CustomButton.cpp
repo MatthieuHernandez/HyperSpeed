@@ -1,7 +1,7 @@
 #include "CustomButton.h"
 
 #include "Components/Button.h"
-#include "Components/TextBlock.h"
+#include "CustomText.h"
 
 void UCustomButton::SetButtonText(const FText& Text)
 {

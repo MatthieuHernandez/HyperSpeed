@@ -7,6 +7,7 @@
 
 class UInputAction;
 class UInputMappingContext;
+class UGameHUD;
 struct FInputActionValue;
 
 UCLASS(Abstract)
@@ -16,6 +17,9 @@ class HYPERSPEED_API AShipPawn : public APawn
 
   public:
     AShipPawn();
+
+    UFUNCTION(BlueprintPure, Category = "Movement")
+    float GetForwardSpeedKmh() const { return ForwardSpeedKmh; }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ClampMin = "0.0", Units = "cm/s"))
     float InitialSpeed = 3000.0f;
@@ -36,10 +40,20 @@ class HYPERSPEED_API AShipPawn : public APawn
 
   protected:
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<UGameHUD> GameHUDClass;
 
   private:
+    void ShowGameHUD();
+
+    UPROPERTY(Transient)
+    TObjectPtr<UGameHUD> GameHUD;
+
     void HandleStrafe(const FInputActionValue& Value);
     void StopStrafe(const FInputActionValue& Value);
 
     float StrafeInput = 0.0f;
+    float ForwardSpeedKmh = 0.0f;
 };

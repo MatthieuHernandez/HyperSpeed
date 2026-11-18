@@ -5,15 +5,16 @@
 
 #include "CustomButton.generated.h"
 
+
 class UButton;
-class UTextBlock;
+class UCustomText;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCustomButtonClicked);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCustomButtonPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCustomButtonReleased);
 
 UCLASS(Abstract)
-class MAGICGOOSE_API UCustomButton : public UUserWidget
+class HYPERSPEED_API UCustomButton : public UUserWidget
 {
     GENERATED_BODY()
 
@@ -37,7 +38,7 @@ class MAGICGOOSE_API UCustomButton : public UUserWidget
     TObjectPtr<UButton> CustomButton;
 
     UPROPERTY(BlueprintReadOnly, Category = "Button", meta = (BindWidgetOptional))
-    TObjectPtr<UTextBlock> CustomText;
+    TObjectPtr<UCustomText> CustomText;
 
   private:
     UFUNCTION()

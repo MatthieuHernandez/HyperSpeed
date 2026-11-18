@@ -1,4 +1,6 @@
 #include "ShipPawn.h"
+#include "GameHUD.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -14,6 +16,9 @@ AShipPawn::AShipPawn()
 {
     // Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+
+    static ConstructorHelpers::FClassFinder<UGameHUD> HUDAsset(TEXT("/Game/Menus/WBP_GameHUD"));
+    GameHUDClass = HUDAsset.Class;
 
     static ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContextAsset(
         TEXT("/Game/Player/IMC_Ship.IMC_Ship"));
@@ -39,7 +44,11 @@ void AShipPawn::Tick(float DeltaTime)
 
     FVector Movement = GetActorForwardVector() * InitialSpeed * DeltaTime;
     Movement.Y = NextY - CurrentY;
+    const FVector PreviousLocation = GetActorLocation();
     AddActorWorldOffset(Movement, true);
+    ForwardSpeedKmh = DeltaTime > SMALL_NUMBER
+        ? FMath::Abs(GetActorLocation().X - PreviousLocation.X) / DeltaTime * 0.036f
+        : 0.0f;
 }
 
 // Called to bind functionality to input
@@ -48,6 +57,8 @@ void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
     StrafeInput = 0.0f;
+
+    ShowGameHUD();
 
     if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
     {
@@ -83,4 +94,38 @@ void AShipPawn::HandleStrafe(const FInputActionValue& Value)
 void AShipPawn::StopStrafe(const FInputActionValue& Value)
 {
     StrafeInput = 0.0f;
+}
+
+void AShipPawn::ShowGameHUD()
+{
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (!PC || !PC->IsLocalController() || GameHUD ||
+        UGameplayStatics::GetCurrentLevelName(this, true) != TEXT("L_Main"))
+    {
+        return;
+    }
+    if (!GameHUDClass)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ShipPawn: GameHUDClass is not configured."));
+        return;
+    }
+
+    GameHUD = CreateWidget<UGameHUD>(PC, GameHUDClass);
+    if (GameHUD)
+    {
+        GameHUD->SetVisibility(ESlateVisibility::HitTestInvisible);
+        GameHUD->AddToPlayerScreen();
+        PC->SetInputMode(FInputModeGameOnly());
+        PC->SetShowMouseCursor(false);
+    }
+}
+
+void AShipPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (GameHUD)
+    {
+        GameHUD->RemoveFromParent();
+        GameHUD = nullptr;
+    }
+    Super::EndPlay(EndPlayReason);
 }
