@@ -1,6 +1,6 @@
 #include "GameHUD.h"
 
-#include "CustomText.h"
+#include "Components/TextBlock.h"
 #include "MusicEngine.h"
 #include "ShipPawn.h"
 #include "Engine/GameInstance.h"

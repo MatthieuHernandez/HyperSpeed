@@ -1,10 +1,10 @@
-const MASTER_VOLUME = 0.15;
+const MASTER_VOLUME = 0.15
 
-const GLOBAL_TEMPO = 99;
+const GLOBAL_TEMPO = 150
 
 // Hyperpop guitar - F minor, 150 BPM, 32-bar loop.
 // One cycle = one four-beat bar.
-setcpm(150 / 4)
+setcpm(GLOBAL_TEMPO / 4)
 
 const kick = sound("<bd*4 [bd bd [~ bd] bd] bd*4 [bd bd bd [bd bd]]>")
     .bank("akaimpc60")
@@ -111,6 +111,6 @@ $: arrange(
     [8, drop],                               // Hyperpop drop
     [4, stack(drop, glitch)],                // Denser final phrase
     [4, stack(guitar, pad)]                  // Breather before the loop
-)
+).postgain(MASTER_VOLUME)
 
 

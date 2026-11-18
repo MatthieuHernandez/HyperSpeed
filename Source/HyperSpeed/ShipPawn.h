@@ -24,6 +24,18 @@ class HYPERSPEED_API AShipPawn : public APawn
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ClampMin = "0.0", Units = "cm/s"))
     float InitialSpeed = 3000.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ClampMin = "0.0", Units = "cm/s"))
+    float MinSpeed = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ClampMin = "0.0", Units = "cm/s"))
+    float MaxSpeed = 6000.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ClampMin = "0.0"))
+    float Acceleration = 1000.0f;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Movement", meta = (Units = "cm/s"))
+    float CurrentSpeed = 0.0f;
+
     // Constant lateral speed towards Y=-200, 0 or +200, including the return to center.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ClampMin = "0.0", Units = "cm/s"))
     float StrafeSpeed = 1500.0f;
@@ -33,6 +45,9 @@ class HYPERSPEED_API AShipPawn : public APawn
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
     TObjectPtr<UInputAction> StrafeAction;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    TObjectPtr<UInputAction> AccelerateAction;
 
     virtual void Tick(float DeltaTime) override;
 
@@ -53,7 +68,10 @@ class HYPERSPEED_API AShipPawn : public APawn
 
     void HandleStrafe(const FInputActionValue& Value);
     void StopStrafe(const FInputActionValue& Value);
+    void HandleAcceleration(const FInputActionValue& Value);
+    void StopAcceleration(const FInputActionValue& Value);
 
     float StrafeInput = 0.0f;
+    float AccelerationInput = 0.0f;
     float ForwardSpeedKmh = 0.0f;
 };

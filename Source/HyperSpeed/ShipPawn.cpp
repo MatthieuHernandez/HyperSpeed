@@ -30,7 +30,12 @@ AShipPawn::AShipPawn()
 }
 
 // Called when the game starts or when spawned
-void AShipPawn::BeginPlay() { Super::BeginPlay(); }
+void AShipPawn::BeginPlay()
+{
+    Super::BeginPlay();
+    const float LowerSpeed = FMath::Max(0.0f, MinSpeed);
+    CurrentSpeed = FMath::Clamp(InitialSpeed, LowerSpeed, FMath::Max(LowerSpeed, MaxSpeed));
+}
 
 // Called every frame
 void AShipPawn::Tick(float DeltaTime)
@@ -42,7 +47,12 @@ void AShipPawn::Tick(float DeltaTime)
     const double CurrentY = GetActorLocation().Y;
     const double NextY = FMath::FInterpConstantTo(CurrentY, TargetY, DeltaTime, StrafeSpeed);
 
-    FVector Movement = GetActorForwardVector() * InitialSpeed * DeltaTime;
+    const float LowerSpeed = FMath::Max(0.0f, MinSpeed);
+    CurrentSpeed = FMath::Clamp(
+        CurrentSpeed + AccelerationInput * FMath::Max(0.0f, Acceleration) * DeltaTime,
+        LowerSpeed, FMath::Max(LowerSpeed, MaxSpeed));
+
+    FVector Movement = GetActorForwardVector() * CurrentSpeed * DeltaTime;
     Movement.Y = NextY - CurrentY;
     const FVector PreviousLocation = GetActorLocation();
     AddActorWorldOffset(Movement, true);
@@ -57,6 +67,7 @@ void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
     StrafeInput = 0.0f;
+    AccelerationInput = 0.0f;
 
     ShowGameHUD();
 
@@ -77,6 +88,12 @@ void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
+        if (AccelerateAction)
+        {
+            EnhancedInput->BindAction(AccelerateAction, ETriggerEvent::Triggered, this, &AShipPawn::HandleAcceleration);
+            EnhancedInput->BindAction(AccelerateAction, ETriggerEvent::Completed, this, &AShipPawn::StopAcceleration);
+            EnhancedInput->BindAction(AccelerateAction, ETriggerEvent::Canceled, this, &AShipPawn::StopAcceleration);
+        }
         if (StrafeAction)
         {
             EnhancedInput->BindAction(StrafeAction, ETriggerEvent::Triggered, this, &AShipPawn::HandleStrafe);
@@ -94,6 +111,16 @@ void AShipPawn::HandleStrafe(const FInputActionValue& Value)
 void AShipPawn::StopStrafe(const FInputActionValue& Value)
 {
     StrafeInput = 0.0f;
+}
+
+void AShipPawn::HandleAcceleration(const FInputActionValue& Value)
+{
+    AccelerationInput = FMath::Clamp(Value.Get<float>(), -1.0f, 1.0f);
+}
+
+void AShipPawn::StopAcceleration(const FInputActionValue& Value)
+{
+    AccelerationInput = 0.0f;
 }
 
 void AShipPawn::ShowGameHUD()

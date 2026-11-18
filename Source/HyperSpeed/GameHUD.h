@@ -5,7 +5,7 @@
 
 #include "GameHUD.generated.h"
 
-class UCustomText;
+class UTextBlock;
 
 UCLASS(Abstract)
 class HYPERSPEED_API UGameHUD : public UUserWidget
@@ -16,8 +16,8 @@ class HYPERSPEED_API UGameHUD : public UUserWidget
     virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
     UPROPERTY(BlueprintReadOnly, Category = "HUD", meta = (BindWidget))
-    TObjectPtr<UCustomText> TempoText;
+    TObjectPtr<UTextBlock> TempoText;
 
     UPROPERTY(BlueprintReadOnly, Category = "HUD", meta = (BindWidget))
-    TObjectPtr<UCustomText> SpeedText;
+    TObjectPtr<UTextBlock> SpeedText;
 };
